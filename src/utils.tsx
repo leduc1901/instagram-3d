@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { ReactElement, useEffect, useRef, useState } from "react";
 import { data } from "./constant";
 
 export const useCarousel = () => {
-  const [rotateY, setRotateY] = useState(0);
   const [displayStories, setDisplayStories] = useState(data);
   const [imagePosition, setImagePosition] = useState(
     new Map(data.map((i) => [i.id, 0]))
@@ -11,12 +10,15 @@ export const useCarousel = () => {
 
   const [currentStory, setCurrentStory] = useState(data[0].id);
   const hold = useRef(0);
+  const radiusRef = useRef(240 / Math.tan(Math.PI / 4));
+
+  const carouselRef = useRef<HTMLDivElement | null>(null);
   const currentStoryRef = useRef(data[0].id);
+  const [radius, setRadius] = useState(240 / Math.tan(Math.PI / 4));
 
   let isDown = false;
   let current = 0;
-
-  const rotateYref = useRef(rotateY);
+  let rotateYref = 0;
 
   const nextImage = () => {
     const currentStoryIndex = getCurrentIndex(currentStoryRef);
@@ -59,36 +61,43 @@ export const useCarousel = () => {
 
   const prevStory = (currentStoryIndex: number) => {
     setCurrentStory(data[currentStoryIndex - 1].id);
-    setRotateY(hold.current + 90);
+    rotateYref = hold.current + 90;
+    if (carouselRef.current) {
+      carouselRef.current.style.transform = `translateZ(-${
+        radiusRef.current
+      }px) rotateY(${hold.current + 90}deg)`;
+    }
+
     hold.current = hold.current + 90;
   };
 
   const nextStory = (currentStoryIndex: number) => {
     setCurrentStory(data[currentStoryIndex + 1].id);
-    setRotateY(hold.current - 90);
+    rotateYref = hold.current - 90;
+    if (carouselRef.current) {
+      carouselRef.current.style.transform = `translateZ(-${
+        radiusRef.current
+      }px) rotateY(${hold.current - 90}deg)`;
+    }
+
     hold.current = hold.current - 90;
   };
 
   const end = () => {
     isDown = false;
     const currentStoryIndex = getCurrentIndex(currentStoryRef);
-    if (rotateYref.current > hold.current && !isFirst(currentStoryIndex)) {
+    if (rotateYref > hold.current && !isFirst(currentStoryIndex)) {
       prevStory(currentStoryIndex);
       return;
     }
-    if (
-      rotateYref.current < hold.current &&
-      !isLast(currentStoryIndex, data.length)
-    ) {
+    if (rotateYref < hold.current && !isLast(currentStoryIndex, data.length)) {
       nextStory(currentStoryIndex);
       return;
     }
-    setRotateY(hold.current);
+    if (carouselRef.current) {
+      carouselRef.current.style.transform = `translateZ(-${radiusRef.current}px) rotateY(${hold.current}deg)`;
+    }
   };
-
-  useEffect(() => {
-    rotateYref.current = rotateY;
-  }, [rotateY]);
 
   useEffect(() => {
     currentStoryRef.current = currentStory;
@@ -100,23 +109,39 @@ export const useCarousel = () => {
   };
 
   const move = (e: MouseEvent | TouchEvent) => {
-    if (!isDown) return;
+    if (!isDown || !carouselRef.current) return;
     e.preventDefault();
     const dist = "pageX" in e ? e.pageX : e.touches[0].pageX;
     const threshHold = Math.abs(dist - current);
     const wrap = 3.6666666;
     if (dist >= current) {
-      setRotateY(hold.current + threshHold / wrap);
+      rotateYref = hold.current + threshHold / wrap;
+      carouselRef.current.style.transform = `translateZ(-${
+        radiusRef.current
+      }px) rotateY(${hold.current + threshHold / wrap}deg)`;
     } else {
-      setRotateY(hold.current - threshHold / wrap);
+      rotateYref = hold.current - threshHold / wrap;
+
+      carouselRef.current.style.transform = `translateZ(-${
+        radiusRef.current
+      }px) rotateY(${hold.current - threshHold / wrap}deg)`;
     }
   };
+
+  useEffect(() => {
+    if (carouselRef.current) {
+      carouselRef.current.style.transform = `translateZ(-${radius}px) rotateY(${hold.current}deg)`;
+    }
+    radiusRef.current = radius;
+    console.log(radiusRef);
+  }, [radius]);
 
   useEffect(() => {
     const carousel = document.getElementById("carousel") || ({} as Element);
 
     if (window.screen.width < 480) {
       setCellSize(window.screen.width);
+      setRadius(window.screen.width / 2 / Math.tan(Math.PI / 4));
     }
 
     if (carousel) {
@@ -134,15 +159,13 @@ export const useCarousel = () => {
 
   return {
     displayStories,
-    rotateY,
     nextImage,
     prevImage,
     imagePosition,
     currentStory,
-    start,
-    move,
-    end,
+    carouselRef,
     cellSize,
+    radius,
   };
 };
 

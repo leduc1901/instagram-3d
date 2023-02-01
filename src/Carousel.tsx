@@ -7,12 +7,13 @@ export const Carousel = () => {
     displayStories,
     nextImage,
     prevImage,
-    rotateY,
     imagePosition,
     cellSize,
+    carouselRef,
+    radius,
   } = useCarousel();
+
   const theta = 90;
-  const radius = cellSize / 2 / Math.tan(Math.PI / 4);
 
   return (
     <>
@@ -40,8 +41,10 @@ export const Carousel = () => {
         >
           <div
             id="carousel"
+            ref={carouselRef}
             style={{
-              transform: `translateZ(-${radius}px) rotateY(${rotateY}deg)`,
+              translate: `translateZ(-${radius}px)`,
+
               transition: "all 0.25s",
             }}
             className="image-full absolute preserve-3d"
