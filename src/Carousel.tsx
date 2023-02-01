@@ -43,9 +43,7 @@ export const Carousel = () => {
             id="carousel"
             ref={carouselRef}
             style={{
-              translate: `translateZ(-${radius}px)`,
-
-              transition: "all 0.25s",
+              transition: "transform 0.25s",
             }}
             className="image-full absolute preserve-3d"
           >
@@ -59,7 +57,7 @@ export const Carousel = () => {
                     transform: `rotateY(${
                       index * theta
                     }deg) translateZ(${radius}px)`,
-                    transition: "all 0.25s",
+                    transition: "transform 0.25s",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
