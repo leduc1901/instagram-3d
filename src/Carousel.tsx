@@ -42,9 +42,6 @@ export const Carousel = () => {
           <div
             id="carousel"
             ref={carouselRef}
-            style={{
-              transition: "transform 0.25s",
-            }}
             className="image-full absolute preserve-3d"
           >
             {displayStories.map((story, index) => {
@@ -57,7 +54,6 @@ export const Carousel = () => {
                     transform: `rotateY(${
                       index * theta
                     }deg) translateZ(${radius}px)`,
-                    transition: "transform 0.25s",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",

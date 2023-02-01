@@ -79,12 +79,15 @@ export const useCarousel = () => {
         radiusRef.current
       }px) rotateY(${hold.current - 90}deg)`;
     }
-
     hold.current = hold.current - 90;
   };
 
   const end = () => {
     isDown = false;
+    if (carouselRef.current) {
+      carouselRef.current.style.transition = "transform 0.25s";
+    }
+
     const currentStoryIndex = getCurrentIndex(currentStoryRef);
     if (rotateYref > hold.current && !isFirst(currentStoryIndex)) {
       prevStory(currentStoryIndex);
@@ -111,6 +114,7 @@ export const useCarousel = () => {
   const move = (e: MouseEvent | TouchEvent) => {
     if (!isDown || !carouselRef.current) return;
     e.preventDefault();
+    carouselRef.current.style.transition = "none";
     const dist = "pageX" in e ? e.pageX : e.touches[0].pageX;
     const threshHold = Math.abs(dist - current);
     const wrap = 3.6666666;
